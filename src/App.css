@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.3s, color 0.3s;
+}
+.app {
+  padding: 2rem;
+  background: #fff;
+  color: #111;
+  min-height: 100vh;
+}
+.app.dark {
+  background: #111;
+  color: #eee;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.progress {
+  height: 10px;
+  background: #ddd;
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+  position: relative;
+}
+.bar {
+  background: #4ade80;
+  height: 100%;
+  transition: width 0.3s;
+}
+.section {
+  margin-top: 2rem;
+}
+.item {
+  list-style: none;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+.item:hover {
+  transform: scale(1.02);
+}
+input[type='checkbox'] {
+  margin-right: 0.5rem;
+}

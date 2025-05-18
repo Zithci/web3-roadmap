@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import './App';
 
 const checklist = [
   {
@@ -45,24 +47,15 @@ const checklist = [
       'Deploy to testnet (e.g., Sepolia)'
     ]
   },
-  {
-    title: 'Frontend-Contract Integration',
-    items: [
-      'Connect MetaMask to website',
-      'Import ABI and Contract Address',
-      'Call read function (view)',
-      'Call write function (send transaction)',
-      'Display on frontend (HTML/React)'
-    ]
-  }
 ];
 
-export default function Web3Roadmap() {
+export default function App() {
   const [progress, setProgress] = useState(() => {
     const saved = localStorage.getItem('web3-progress');
     return saved ? JSON.parse(saved) : {};
   });
 
+  const [dark, setDark] = useState(false);
   useEffect(() => {
     localStorage.setItem('web3-progress', JSON.stringify(progress));
   }, [progress]);
@@ -72,26 +65,43 @@ export default function Web3Roadmap() {
     setProgress(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const total = checklist.reduce((acc, sec) => acc + sec.items.length, 0);
+  const done = Object.values(progress).filter(v => v).length;
+  const percentage = Math.round((done / total) * 100);
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Web3 Roadmap</h1>
+    <div className={dark ? 'app dark' : 'app'}>
+      <div className="header">
+        <h1>Web3 Roadmap</h1>
+        <button onClick={() => setDark(!dark)}>{dark ? '☀️ Light' : '🌙 Dark'}</button>
+      </div>
+      <div className="progress">
+        <div className="bar" style={{ width: `${percentage}%` }} />
+        <span>{done}/{total} complete</span>
+      </div>
       {checklist.map((section, sIdx) => (
-        <div key={sIdx} style={{ marginBottom: 20 }}>
+        <div key={sIdx} className="section">
           <h2>{section.title}</h2>
           <ul>
             {section.items.map((item, iIdx) => {
               const key = `${section.title}-${item}`;
               return (
-                <li key={iIdx}>
+                <motion.li
+                  key={iIdx}
+                  className="item"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: iIdx * 0.05 }}
+                >
                   <label>
                     <input
                       type="checkbox"
                       checked={progress[key] || false}
                       onChange={() => toggle(section.title, item)}
                     />
-                    {item}
+                    <span>{item}</span>
                   </label>
-                </li>
+                </motion.li>
               );
             })}
           </ul>
