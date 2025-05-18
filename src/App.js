@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import './App.css';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient('https://fqgzeomlowradzatgjgk.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZ3plb21sb3dyYWR6YXRnamdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NzM0NzgsImV4cCI6MjA2MzE0OTQ3OH0.sW38Y2Tf0rJBtzOG2BppYj68-YhYIPoPmxWEMzzMtIM');
+const supabase = createClient('https://zithcis-project.supabase.co', 'YOUR_SUPABASE_PUBLIC_ANON_KEY');
 
 const checklist = [
   {
@@ -57,8 +57,11 @@ export default function App() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
+    const uid = localStorage.getItem('uid') || crypto.randomUUID();
+    localStorage.setItem('uid', uid);
+
     const fetchData = async () => {
-      const { data, error } = await supabase.from('progress').select('*').eq('id', 1).single();
+      const { data, error } = await supabase.from('progress').select('*').eq('user_id', uid).single();
       if (data && data.value) {
         setProgress(data.value);
       }
@@ -67,8 +70,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const uid = localStorage.getItem('uid');
+    if (!uid) return;
+
     const saveData = async () => {
-      await supabase.from('progress').upsert({ id: 1, value: progress });
+      await supabase.from('progress').upsert({ user_id: uid, value: progress });
     };
     saveData();
   }, [progress]);
