@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import './App';
+import { motion } from 'framer-motion';
+import './App.css';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('https://fqgzeomlowradzatgjgk.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZ3plb21sb3dyYWR6YXRnamdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NzM0NzgsImV4cCI6MjA2MzE0OTQ3OH0.sW38Y2Tf0rJBtzOG2BppYj68-YhYIPoPmxWEMzzMtIM');
 
 const checklist = [
   {
@@ -50,14 +53,24 @@ const checklist = [
 ];
 
 export default function App() {
-  const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem('web3-progress');
-    return saved ? JSON.parse(saved) : {};
-  });
-
+  const [progress, setProgress] = useState({});
   const [dark, setDark] = useState(false);
+
   useEffect(() => {
-    localStorage.setItem('web3-progress', JSON.stringify(progress));
+    const fetchData = async () => {
+      const { data, error } = await supabase.from('progress').select('*').eq('id', 1).single();
+      if (data && data.value) {
+        setProgress(data.value);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const saveData = async () => {
+      await supabase.from('progress').upsert({ id: 1, value: progress });
+    };
+    saveData();
   }, [progress]);
 
   const toggle = (section, item) => {
