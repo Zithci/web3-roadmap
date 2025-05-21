@@ -45,3 +45,17 @@ body {
 input[type='checkbox'] {
   margin-right: 0.5rem;
 }
+
+.alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  z-index: 1000;
+  box-shadow: 0 0 10px #000;
+}
+
