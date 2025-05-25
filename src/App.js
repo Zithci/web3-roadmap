@@ -1,174 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import './App.css';
-import { createClient } from '@supabase/supabase-js';
+// Style
+document.body.style.fontFamily = "sans-serif";
+document.body.style.padding = "20px";
+document.body.style.transition = "background 0.3s, color 0.3s";
 
-const supabase = createClient(
-  'https://fqgzeomlowradzatgjgk.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxZ3plb21sb3dyYWR6YXRnamdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NzM0NzgsImV4cCI6MjA2MzE0OTQ3OH0.sW38Y2Tf0rJBtzOG2BppYj68-YhYIPoPmxWEMzzMtIM'
-);
+// Title
+const title = document.createElement("h1");
+title.textContent = "Web3 Roadmap";
+document.body.appendChild(title);
 
-const checklist = [
-  {
-    title: 'JavaScript Fundamentals',
-    items: [
-      'Variables, let, const, var',
-      'Data Types: string, number, boolean, null, undefined, object, array',
-      'Functions: declaration, expression, arrow function',
-      'Loops: for, while, do-while',
-      'Conditionals: if, else, switch',
-      'Operators: arithmetic, comparison, logical',
-      'Arrays & Methods: push, pop, shift, unshift, map, filter, reduce',
-      'Objects: create, access, modify, loop',
-    ],
-  },
-  {
-    title: 'Async/Await + API Calls',
-    items: [
-      'Understanding callbacks & promises',
-      'fetch and using .then()',
-      'Refactor to async/await',
-      'Handle API error with try-catch',
-      'Use public API & render data to DOM',
-    ],
-  },
-  {
-    title: 'Solidity Basics',
-    items: [
-      'Understand what is EVM',
-      'Smart contract structure: pragma, contract, functions',
-      'Data types: uint, string, bool, address',
-      'Storage vs Memory',
-      'Visibility: public, private, internal, external',
-      'Deploy simple contract in Remix',
-    ],
-  },
-  {
-    title: 'Smart Contract Deployment',
-    items: [
-      'Install & init Hardhat project',
-      'Create & compile contract',
-      'Write deployment script',
-      'Test deploy on local Hardhat network',
-      'Deploy to testnet (e.g., Sepolia)',
-    ],
-  },
-];
+// Progress Bar
+const progressContainer = document.createElement("div");
+progressContainer.style.width = "100%";
+progressContainer.style.height = "8px";
+progressContainer.style.background = "#ddd";
+progressContainer.style.borderRadius = "5px";
+progressContainer.style.margin = "10px 0 30px";
 
-export default function App() {
-  const [progress, setProgress] = useState({});
-  const [dark, setDark] = useState(false);
-  const [message, setMessage] = useState('');
+const progressBar = document.createElement("div");
+progressBar.style.height = "100%";
+progressBar.style.width = "0%";
+progressBar.style.background = "limegreen";
+progressBar.style.borderRadius = "5px";
+progressBar.style.transition = "width 0.3s";
 
-  useEffect(() => {
-    const uid = localStorage.getItem('uid') || crypto.randomUUID();
-    localStorage.setItem('uid', uid);
+progressContainer.appendChild(progressBar);
+document.body.appendChild(progressContainer);
 
-    const fetchData = async () => {
-      const { data, error } = await supabase
-        .from('progress')
-        .select('*')
-        .eq('user_id', uid)
-        .maybeSingle();
+// Button Panel
+const btnPanel = document.createElement("div");
+btnPanel.style.position = "absolute";
+btnPanel.style.top = "20px";
+btnPanel.style.right = "20px";
 
-      console.log("FETCH RESULT:", data, error);
-
-      if (data && data.value) {
-        try {
-          const parsed = JSON.parse(data.value);
-          console.log("PARSED DATA:", parsed);
-          setProgress(parsed);
-        } catch (err) {
-          console.error('JSON parse error:', err);
-        }
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleSave = async () => {
-    const uid = localStorage.getItem('uid');
-    if (!uid) return;
-
-    await supabase.from('progress').upsert({
-      user_id: uid,
-      value: JSON.stringify(progress),
-    });
-
-    setMessage('✅ Progress saved!');
-    setTimeout(() => setMessage(''), 2000);
-  };
-
-  const handleReset = async () => {
-    const uid = localStorage.getItem('uid');
-    if (!uid) return;
-
-    await supabase.from('progress').delete().eq('user_id', uid);
-    setProgress({});
-    setMessage('🗑 Progress cleared!');
-    setTimeout(() => setMessage(''), 2000);
-  };
-
-  const toggle = (section, item) => {
-    const key = `${section}-${item}`;
-    setProgress(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const total = checklist.reduce((acc, sec) => acc + sec.items.length, 0);
-  const done = Object.values(progress).filter(v => v).length;
-  const percentage = Math.round((done / total) * 100);
-
-  return (
-    <div className={dark ? 'app dark' : 'app'}>
-      <div className="header">
-        <h1>Web3 Roadmap</h1>
-        <div>
-          <button onClick={handleSave}>💾 Save</button>
-          <button onClick={handleReset}>🗑 Reset</button>
-          <button onClick={() => setDark(!dark)}>
-            {dark ? '☀ Light' : '🌙 Dark'}
-          </button>
-        </div>
-      </div>
-
-      {message && <div className="alert">{message}</div>}
-
-      <div className="progress">
-        <div className="bar" style={{ width: `${percentage}%` }} />
-        <span>
-          {done}/{total} complete
-        </span>
-      </div>
-
-      {checklist.map((section, sIdx) => (
-        <div key={sIdx} className="section">
-          <h2>{section.title}</h2>
-          <ul>
-            {section.items.map((item, iIdx) => {
-              const key = `${section.title}-${item}`;
-              return (
-                <motion.li
-                  key={iIdx}
-                  className="item"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: iIdx * 0.05 }}
-                >
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={progress[key] || false}
-                      onChange={() => toggle(section.title, item)}
-                    />
-                    <span>{item}</span>
-                  </label>
-                </motion.li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
+function createButton(label, emoji, onclick) {
+  const btn = document.createElement("button");
+  btn.textContent = `${emoji} ${label}`;
+  btn.style.margin = "0 3px";
+  btn.onclick = onclick;
+  return btn;
 }
+
+document.body.appendChild(btnPanel);
+
+// Data
+const roadmapData = {
+  "JavaScript Fundamentals": [
+    "Variables: let, const, var",
+    "Data Types: string, number, boolean, null, undefined, object, array",
+    "Functions: declaration, expression, arrow function",
+    "Loops: for, while, do-while",
+    "Conditionals: if, else, switch",
+    "Operators: arithmetic, comparison, logical",
+    "Arrays & Methods: push, pop, shift, unshift, map, filter, reduce",
+    "Objects: create, access, modify, loop"
+  ],
+  "Async/Await + API Calls": [
+    "Understanding callbacks & promises",
+    "fetch and using .then()",
+    "Refactor to async/await",
+    "Handle API error with try-catch",
+    "Use public API & render data to DOM"
+  ],
+  "Solidity Basics": [
+    "Understand what is EVM",
+    "Smart contract structure: pragma, contract, functions",
+    "Data types: uint, string, bool, address",
+    "Storage vs Memory",
+    "Visibility: public, private, internal, external",
+    "Deploy simple contract in Remix"
+  ],
+  "Smart Contract Deployment": [
+    "Install & init Hardhat project",
+    "Create & compile contract",
+    "Write deployment script",
+    "Test deploy on local Hardhat network",
+    "Deploy to testnet (e.g., Sepolia)"
+  ]
+};
+
+// Load saved state
+const savedState = JSON.parse(localStorage.getItem("roadmapProgress") || "{}");
+
+let totalCheckbox = 0;
+let allCheckboxes = [];
+
+function renderSection(titleText, items) {
+  const sectionTitle = document.createElement("h2");
+  sectionTitle.textContent = titleText;
+  sectionTitle.style.marginTop = "30px";
+  document.body.appendChild(sectionTitle);
+
+  items.forEach(item => {
+    const label = document.createElement("label");
+    label.style.display = "block";
+    label.style.margin = "5px 0";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = savedState[item] || false;
+    checkbox.onchange = updateProgress;
+
+    allCheckboxes.push({ checkbox, label: item });
+
+    const span = document.createElement("span");
+    span.textContent = " " + item;
+
+    label.appendChild(checkbox);
+    label.appendChild(span);
+    document.body.appendChild(label);
+
+    totalCheckbox++;
+  });
+}
+
+function updateProgress() {
+  const checkedCount = allCheckboxes.filter(c => c.checkbox.checked).length;
+  const percent = (checkedCount / totalCheckbox) * 100;
+  progressBar.style.width = percent + "%";
+}
+
+function saveProgress() {
+  const state = {};
+  allCheckboxes.forEach(c => {
+    state[c.label] = c.checkbox.checked;
+  });
+  localStorage.setItem("roadmapProgress", JSON.stringify(state));
+  alert("Progress saved!");
+}
+
+function resetProgress() {
+  allCheckboxes.forEach(c => c.checkbox.checked = false);
+  updateProgress();
+  saveProgress();
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.style.background === "black";
+  if (isDark) {
+    document.body.style.background = "white";
+    document.body.style.color = "black";
+  } else {
+    document.body.style.background = "black";
+    document.body.style.color = "white";
+  }
+}
+
+// Render
+Object.entries(roadmapData).forEach(([section, items]) => {
+  renderSection(section, items);
+});
+
+updateProgress();
+
+btnPanel.appendChild(createButton("Save", "💾", saveProgress));
+btnPanel.appendChild(createButton("Reset", "🧼", resetProgress));
+btnPanel.appendChild(createButton("Dark", "🌙", toggleDarkMode));
